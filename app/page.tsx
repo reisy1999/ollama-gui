@@ -1,21 +1,92 @@
 "use client";
 
 import { useState } from "react";
+import { POST } from "./api/chat/route";
 
-// プロンプト入力と結果表示
+// プロンプト入力と送信
 export default function Page() {
-  const [result,setResult] = useState("");
+  const [prompt, setPrompt] = useState("");
+  const [result, setResult] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const send = async () => {
-    const r = await fetch("/api/chat",{ method: "POST"});
-    const data = await r.json();
-    setResult(data.response);
+  const send = async () =>{
+    // プロンプトが未入力なら何もしない
+    if (!prompt.trim()) return;
+    // apiにpromptPOST
+    setIsLoading(true);
+    try {
+      const r = await fetch("/api/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "aplication/json"
+        },
+        body: JSON.stringify({prompt}),
+      })
+    } catch (error) {
+      setResult("エラーが発生しました");
+    } finally {
+      setIsLoading(false);
+    }
+
   };
 
-  return(
-    <main style={{padding: 24}}>
-      <button onClick={send}>送信</button>
-      <div style={{ marginTop: 16 }}>結果: {result}</div>
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // 改行は送信から除外
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
+  };
+
+  return (
+    <main style={{ padding: 24, maxWidth: 800, margin: "0 auto" }}>
+      <h1 style={{ marginBottom: 16 }}>Ollama Chat</h1>
+      <textarea
+        value={prompt}
+        onChange={(e) => setPrompt(e.target.value)}
+        onKeyDown={handleKeyDown}
+        placeholder="メッセージを入力してください..."
+        style={{
+          width: "100%",
+          minHeight: 100,
+          padding: 12,
+          fontSize: 16,
+          borderRadius: 8,
+          border: "1px solid #ccc",
+          resize: "vertical",
+        }}
+        disabled={isLoading}
+      />
+      <button
+        onClick={send}
+        disabled={isLoading || !prompt.trim()}
+        style={{
+          marginTop: 12,
+          padding: "10px 24px",
+          fontSize: 16,
+          borderRadius: 8,
+          border: "none",
+          backgroundColor: isLoading || !prompt.trim() ? "#ccc" : "#0070f3",
+          color: "#fff",
+          cursor: isLoading || !prompt.trim() ? "not-allowed" : "pointer",
+        }}
+      >
+        {isLoading ? "送信中..." : "送信"}
+      </button>
+      {result && (
+        <div
+          style={{
+            marginTop: 24,
+            padding: 16,
+            backgroundColor: "#f5f5f5",
+            borderRadius: 8,
+            whiteSpace: "pre-wrap",
+          }}
+        >
+          <strong>結果:</strong>
+          <p style={{ marginTop: 8 }}>{result}</p>
+        </div>
+      )}
     </main>
-  )
+  );
 }
