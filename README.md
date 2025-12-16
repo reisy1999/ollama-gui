@@ -1,40 +1,64 @@
-<<<<<<< HEAD
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# README🚀
 
-## Getting Started
+## purpose
+フロントエンド初学者の私が、アジャイル開発で少しずつチャットアプリを育てて、
+私だけのローカルチャットアプリを作成することを目的としています。
 
-First, run the development server:
+## Overview
+
+ローカルで動作する **Ollama API** を、**Next.js の API Route 経由**で利用する Web UI です。
+
+* Framework: **Next.js (App Router)**
+* Language: **TypeScript**
+* LLM Backend: **Ollama (local)**
+
+## Requirements
+
+* Node.js >= 18
+* Ollama(ローカルにインストール)
+
+## Setup
+
+### 1. Ollama を起動
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+ollama serve
+ollama pull llama3
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. プロジェクト起動
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+git clone <REPOSITORY_URL>
+cd <PROJECT_DIR>
+npm install
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+ブラウザ:
 
-## Learn More
+* [http://localhost:3000](http://localhost:3000)
 
-To learn more about Next.js, take a look at the following resources:
+## Environment Variables
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`.env.local` を作成してください。
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```env
+# Ollama API
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=__YOUR_MODEL_NAME__
+```
 
-## Deploy on Vercel
+## Architecture
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-=======
-# ollama-gui
->>>>>>> d3e4057 (Initial commit)
+```
+Browser
+  │
+  │ POST /api/chat
+  ▼
+Next.js API Route
+  │
+  │ POST http://localhost:11434/api/chat
+  ▼
+Ollama (local)
+```
