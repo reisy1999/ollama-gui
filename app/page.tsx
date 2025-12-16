@@ -18,10 +18,17 @@ export default function Page() {
       const r = await fetch("/api/chat", {
         method: "POST",
         headers: {
-          "Content-Type": "aplication/json"
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({prompt}),
-      })
+      });
+
+      if (!r.ok) {
+        throw new Error(`HTTP error! status: ${r.status}`);
+      }
+
+      const data = await r.json();
+      setResult(data.response || "レスポンスがありません");
     } catch (error) {
       setResult("エラーが発生しました");
     } finally {
