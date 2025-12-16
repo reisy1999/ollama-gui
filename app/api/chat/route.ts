@@ -13,14 +13,18 @@ export async function POST(request: Request) {
             );
         }
 
+        // 環境変数から設定を取得
+        const ollamaBaseUrl = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
+        const ollamaModel = process.env.OLLAMA_MODEL || 'llama2';
+
         // Ollama APIにリクエストを送信
-        const ollamaResponse = await fetch('http://127.0.0.1:11434/api/chat', {
+        const ollamaResponse = await fetch(`${ollamaBaseUrl}/api/chat`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                model: 'hf.co/unsloth/Qwen3-4B-Instruct-2507-GGUF:Q4_K_M',
+                model: ollamaModel,
                 messages: [
                     {
                         role: 'user',
