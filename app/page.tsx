@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { POST } from "./api/chat/route";
 
 // プロンプト入力と送信
 export default function Page() {
@@ -9,32 +8,49 @@ export default function Page() {
   const [result, setResult] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const send = async () =>{
+  const send = async () => {
     // プロンプトが未入力なら何もしない
     if (!prompt.trim()) return;
-    // apiにpromptPOST
+
     setIsLoading(true);
+    setResult(""); // 結果をクリア
+
     try {
-      const r = await fetch("/api/chat", {
+      const response = await fetch("/api/chat", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({prompt}),
+        body: JSON.stringify({ prompt }),
       });
 
-      if (!r.ok) {
-        throw new Error(`HTTP error! status: ${r.status}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await r.json();
-      setResult(data.response || "レスポンスがありません");
+      // ストリーミングレスポンスを処理
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+
+      if (!reader) {
+        throw new Error("Response body is null");
+      }
+
+      // ストリームからデータを読み取る
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        // チャンクをデコードして結果に追加
+        const chunk = decoder.decode(value, { stream: true });
+        setResult((prev) => prev + chunk);
+      }
     } catch (error) {
+      console.error("Chat error:", error);
       setResult("エラーが発生しました");
     } finally {
       setIsLoading(false);
     }
-
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
