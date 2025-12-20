@@ -30,6 +30,7 @@ export async function POST(request: Request) {
       async start(controller) {
         const reader = ollamaResponse.body!.getReader();
         const decoder = new TextDecoder();
+        const encoder = new TextEncoder(); // 追加: 文字列をUint8Arrayに変換するため
 
         try {
           while (true) {
@@ -38,16 +39,16 @@ export async function POST(request: Request) {
 
             // Uint8Array → 文字列
             const text = decoder.decode(value);
-            
+
             // 改行で分割（複数のJSONが入っている場合がある）
             const lines = text.split('\n').filter(line => line.trim());
 
             for (const line of lines) {
               const json = JSON.parse(line);
-              
-              // contentだけ送る
+
+              // contentだけ送る（Uint8Arrayに変換）
               if (json.message?.content) {
-                controller.enqueue(json.message.content);
+                controller.enqueue(encoder.encode(json.message.content));
               }
             }
           }

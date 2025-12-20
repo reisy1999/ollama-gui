@@ -61,7 +61,12 @@ export default function Page() {
         const chunk = decoder.decode(value, { stream: true });
         setMessages((prev) => {
           const newMessages = [...prev];
-          newMessages[newMessages.length - 1].content += chunk;
+          const lastIndex = newMessages.length - 1;
+          // オブジェクトも新しく作成（元のオブジェクトを変更しない）
+          newMessages[lastIndex] = {
+            ...newMessages[lastIndex],
+            content: newMessages[lastIndex].content + chunk,
+          };
           return newMessages;
         });
       }
@@ -70,7 +75,11 @@ export default function Page() {
       // エラーメッセージを最後のメッセージに設定
       setMessages((prev) => {
         const newMessages = [...prev];
-        newMessages[newMessages.length - 1].content = "エラーが発生しました";
+        const lastIndex = newMessages.length - 1;
+        newMessages[lastIndex] = {
+          ...newMessages[lastIndex],
+          content: "エラーが発生しました",
+        };
         return newMessages;
       });
     } finally {
