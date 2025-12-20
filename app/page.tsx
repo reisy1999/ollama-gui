@@ -12,7 +12,6 @@ type Message = {
 export default function Page() {
   const [prompt, setPrompt] = useState("");
   const [messages, setMessages] = useState<Message[]>([]); // 配列で会話履歴を管理
-  const [result, setResult] = useState(""); // 一旦残しておく（次のステップで削除）
   const [isLoading, setIsLoading] = useState(false);
 
   const send = async () => {
@@ -122,20 +121,24 @@ export default function Page() {
       >
         {isLoading ? "送信中..." : "送信"}
       </button>
-      {result && (
-        <div
-          style={{
-            marginTop: 24,
-            padding: 16,
-            backgroundColor: "#f5f5f5",
-            borderRadius: 8,
-            whiteSpace: "pre-wrap",
-          }}
-        >
-          <strong>結果:</strong>
-          <p style={{ marginTop: 8 }}>{result}</p>
-        </div>
-      )}
+      {/* メッセージ履歴の表示 */}
+      <div style={{ marginTop: 24 }}>
+        {messages.map((message, index) => (
+          <div
+            key={index}
+            style={{
+              marginBottom: 16,
+              padding: 12,
+              backgroundColor: message.role === "user" ? "#e3f2fd" : "#f5f5f5",
+              borderRadius: 8,
+              whiteSpace: "pre-wrap",
+            }}
+          >
+            <strong>{message.role === "user" ? "あなた" : "AI"}:</strong>
+            <p style={{ marginTop: 8 }}>{message.content}</p>
+          </div>
+        ))}
+      </div>
     </main>
   );
 }
