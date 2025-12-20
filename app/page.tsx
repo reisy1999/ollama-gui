@@ -2,10 +2,17 @@
 
 import { useState } from "react";
 
+// メッセージの型定義
+type Message = {
+  role: "user" | "assistant";
+  content: string;
+};
+
 // プロンプト入力と送信
 export default function Page() {
   const [prompt, setPrompt] = useState("");
-  const [result, setResult] = useState("");
+  const [messages, setMessages] = useState<Message[]>([]); // 配列で会話履歴を管理
+  const [result, setResult] = useState(""); // 一旦残しておく（次のステップで削除）
   const [isLoading, setIsLoading] = useState(false);
 
   const send = async () => {
