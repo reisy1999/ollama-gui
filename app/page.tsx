@@ -20,7 +20,17 @@ export default function Page() {
     if (!prompt.trim()) return;
 
     setIsLoading(true);
-    setResult(""); // 結果をクリア
+
+    // 1. ユーザーメッセージを配列に追加
+    const userMessage: Message = { role: "user", content: prompt };
+    setMessages((prev) => [...prev, userMessage]);
+
+    // 2. 入力欄をクリア
+    setPrompt("");
+
+    // 3. AIの返答用の空メッセージを追加
+    const assistantMessage: Message = { role: "assistant", content: "" };
+    setMessages((prev) => [...prev, assistantMessage]);
 
     try {
       const response = await fetch("/api/chat", {
@@ -48,13 +58,22 @@ export default function Page() {
         const { done, value } = await reader.read();
         if (done) break;
 
-        // チャンクをデコードして結果に追加
+        // チャンクをデコードして最後のメッセージ（AI）に追加
         const chunk = decoder.decode(value, { stream: true });
-        setResult((prev) => prev + chunk);
+        setMessages((prev) => {
+          const newMessages = [...prev];
+          newMessages[newMessages.length - 1].content += chunk;
+          return newMessages;
+        });
       }
     } catch (error) {
       console.error("Chat error:", error);
-      setResult("エラーが発生しました");
+      // エラーメッセージを最後のメッセージに設定
+      setMessages((prev) => {
+        const newMessages = [...prev];
+        newMessages[newMessages.length - 1].content = "エラーが発生しました";
+        return newMessages;
+      });
     } finally {
       setIsLoading(false);
     }
