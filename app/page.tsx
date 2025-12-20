@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 // メッセージの型定義
 type Message = {
@@ -13,6 +13,12 @@ export default function Page() {
   const [prompt, setPrompt] = useState("");
   const [messages, setMessages] = useState<Message[]>([]); // 配列で会話履歴を管理
   const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null); // 自動スクロール用
+
+  // メッセージが更新されたら最下部にスクロール
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const send = async () => {
     // プロンプトが未入力なら何もしない
@@ -96,57 +102,107 @@ export default function Page() {
   };
 
   return (
-    <main style={{ padding: 24, maxWidth: 800, margin: "0 auto" }}>
-      <h1 style={{ marginBottom: 16 }}>Ollama Chat</h1>
-      <textarea
-        value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
-        onKeyDown={handleKeyDown}
-        placeholder="メッセージを入力してください..."
+    <main
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        height: "100vh",
+        maxWidth: 800,
+        margin: "0 auto",
+      }}
+    >
+      {/* ヘッダー */}
+      <div
         style={{
-          width: "100%",
-          minHeight: 100,
-          padding: 12,
-          fontSize: 16,
-          borderRadius: 8,
-          border: "1px solid #ccc",
-          resize: "vertical",
-        }}
-        disabled={isLoading}
-      />
-      <button
-        onClick={send}
-        disabled={isLoading || !prompt.trim()}
-        style={{
-          marginTop: 12,
-          padding: "10px 24px",
-          fontSize: 16,
-          borderRadius: 8,
-          border: "none",
-          backgroundColor: isLoading || !prompt.trim() ? "#ccc" : "#0070f3",
-          color: "#fff",
-          cursor: isLoading || !prompt.trim() ? "not-allowed" : "pointer",
+          padding: 16,
+          borderBottom: "1px solid #e0e0e0",
+          backgroundColor: "#fff",
         }}
       >
-        {isLoading ? "送信中..." : "送信"}
-      </button>
-      {/* メッセージ履歴の表示 */}
-      <div style={{ marginTop: 24 }}>
+        <h1 style={{ margin: 0, fontSize: 20 }}>Ollama Chat</h1>
+      </div>
+
+      {/* メッセージエリア */}
+      <div
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          padding: 16,
+          backgroundColor: "#fafafa",
+        }}
+      >
         {messages.map((message, index) => (
           <div
             key={index}
             style={{
+              display: "flex",
+              justifyContent: message.role === "user" ? "flex-end" : "flex-start",
               marginBottom: 16,
-              padding: 12,
-              backgroundColor: message.role === "user" ? "#e3f2fd" : "#f5f5f5",
-              borderRadius: 8,
-              whiteSpace: "pre-wrap",
             }}
           >
-            <strong>{message.role === "user" ? "あなた" : "AI"}:</strong>
-            <p style={{ marginTop: 8 }}>{message.content}</p>
+            <div
+              style={{
+                maxWidth: "70%",
+                padding: 12,
+                backgroundColor: message.role === "user" ? "#0084ff" : "#fff",
+                color: message.role === "user" ? "#ffffff" : "#000000",
+                borderRadius: 18,
+                whiteSpace: "pre-wrap",
+                boxShadow: "0 1px 2px rgba(0, 0, 0, 0.1)",
+              }}
+            >
+              {message.content}
+            </div>
           </div>
         ))}
+        {/* 自動スクロール用の要素 */}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* 入力エリア */}
+      <div
+        style={{
+          padding: 16,
+          borderTop: "1px solid #e0e0e0",
+          backgroundColor: "#fff",
+        }}
+      >
+        <div style={{ display: "flex", gap: 8 }}>
+          <textarea
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            onKeyDown={handleKeyDown}
+            placeholder="メッセージを入力してください..."
+            style={{
+              flex: 1,
+              minHeight: 44,
+              maxHeight: 120,
+              padding: 12,
+              fontSize: 16,
+              borderRadius: 22,
+              border: "1px solid #e0e0e0",
+              resize: "none",
+              outline: "none",
+            }}
+            disabled={isLoading}
+          />
+          <button
+            onClick={send}
+            disabled={isLoading || !prompt.trim()}
+            style={{
+              padding: "0 24px",
+              fontSize: 16,
+              borderRadius: 22,
+              border: "none",
+              backgroundColor: isLoading || !prompt.trim() ? "#ccc" : "#0084ff",
+              color: "#fff",
+              cursor: isLoading || !prompt.trim() ? "not-allowed" : "pointer",
+              fontWeight: "bold",
+            }}
+          >
+            {isLoading ? "..." : "送信"}
+          </button>
+        </div>
       </div>
     </main>
   );
